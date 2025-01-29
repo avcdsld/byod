@@ -3,11 +3,8 @@
 ## 作品一覧
 
 - DeepSea
+    - https://byod2025.web.app/deepsea
 - inside window
+    - https://byod2025.web.app/inside-window
 - LostLanguage
-
-## URLs
-
-https://byod2025.web.app/deepsea
-https://byod2025.web.app/inside-window
-https://byod2025.web.app/lost-language
+    - https://byod2025.web.app/lost-language
