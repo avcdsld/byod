@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
     <meta charset="UTF-8">
     <title>余白の詩</title>
@@ -14,55 +14,44 @@
             color: white;
             font-family: 'Noto Sans JP', sans-serif;
             overflow: hidden;
-        }
-        
-        .poem-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 5vh 5vw;
+            padding: 10vh 5vw;
             box-sizing: border-box;
         }
         
-        #poem {
-            font-size: 8vh;
-            line-height: 1.6;
+        .poem-container {
+            width: 100%;
             text-align: center;
+        }
+        
+        #poem {
+            font-size: min(10vw, 14vh);
+            line-height: 1.8;
             opacity: 0;
-            max-width: 90%;
             font-weight: 400;
-            letter-spacing: 0.05em;
-            padding: 2vh 0;
+            letter-spacing: 0.1em;
+            word-spacing: 2em;
+            display: block;
+            max-width: 100%;
+            transition: opacity 0.5s ease-in-out;
         }
         
-        @media (max-width: 1200px) {
-            #poem {
-                font-size: 8vh;
-            }
+        #measure-span {
+            position: absolute;
+            visibility: hidden;
+            white-space: nowrap;
+            font-size: min(10vw, 14vh);
+            font-weight: 400;
+            letter-spacing: 0.1em;
+            word-spacing: 2em;
         }
         
-        @media (max-width: 800px) {
-            #poem {
-                font-size: 6vh;
-            }
-        }
-        
-        @media (max-height: 700px) {
-            #poem {
-                font-size: 5vh;
-                line-height: 1.4;
-            }
-        }
-        
-        @media (max-height: 500px) {
-            #poem {
-                font-size: 4vh;
-                line-height: 1.3;
+        @media (max-width: 1920px) {
+            #poem, #measure-span {
+                font-size: min(6vw, 8vh);
+                word-spacing: 1em;
             }
         }
     </style>
@@ -70,52 +59,31 @@
 <body>
     <div class="poem-container">
         <div id="poem"></div>
+        <span id="measure-span"></span>
     </div>
 
     <script>
         const poems = [
-            [
-                "まだ言葉はない",
-                "光だけがある",
-                "未来を待っている"
-            ],
-            [
-                "このスペースは",
-                "まだ何者でもない",
-                "でも",
-                "いつか誰かのものになる"
-            ],
-            [
-                "意味のない光",
-                "意味を待つ光",
-                "名乗るのは",
-                "あなたかもしれない"
-            ],
-            [
-                "ここにあるのは",
-                "言葉ではなく",
-                "空白のままの",
-                "物語の扉"
-            ],
-            [
-                "ここにはまだない",
-                "それが何かもわからない",
-                "でも",
-                "きっと、いつか"
-            ]
+            ["まだ言葉はない", "光だけがある", "未来を待っている"],
+            ["このスペースは", "まだ何者でもない", "でも", "いつか誰かのものになる"],
+            ["意味のない光", "意味を待つ光", "名乗るのは", "あなたかもしれない"],
+            ["ここにあるのは", "言葉ではなく", "空白のままの", "物語の扉"],
+            ["ここにはまだない", "それが何かもわからない", "でも", "きっと、いつか"]
         ];
         
         const poemElement = document.getElementById('poem');
+        const measureSpan = document.getElementById('measure-span');
         let currentText = "";
+        let displayText = "";
         let currentLine = 0;
         let currentChar = 0;
         let currentPoem = 0;
-        
+
         function typeText() {
             if (currentPoem === -1) {
                 if (currentChar < "広告募集中".length) {
                     currentText += "広告募集中".charAt(currentChar);
-                    poemElement.innerHTML = currentText;
+                    updateDisplay();
                     currentChar++;
                     setTimeout(typeText, 150);
                 } else {
@@ -124,20 +92,30 @@
                 poemElement.style.opacity = "1";
                 return;
             }
-            
+
             const currentPoemLines = poems[currentPoem];
-            
             if (currentLine < currentPoemLines.length) {
                 if (currentChar < currentPoemLines[currentLine].length) {
-                    currentText += currentPoemLines[currentLine].charAt(currentChar);
-                    poemElement.innerHTML = currentText;
+                    let nextChar = currentPoemLines[currentLine].charAt(currentChar);
+
+                    measureSpan.textContent = currentText + nextChar;
+                    const maxWidth = window.innerWidth - (window.innerWidth * 0.1);
+                    if (measureSpan.offsetWidth > maxWidth && currentText.length > 0) {
+                        displayText += currentText + "\n";
+                        currentText = nextChar;
+                    } else {
+                        currentText += nextChar;
+                    }
+
+                    updateDisplay();
                     currentChar++;
-                    setTimeout(typeText, 150);
+                    setTimeout(typeText, 100);
                 } else {
-                    currentText += "<br>";
-                    poemElement.innerHTML = currentText;
+                    displayText += currentText + "\n";
+                    currentText = "";
                     currentLine++;
                     currentChar = 0;
+                    updateDisplay();
                     setTimeout(typeText, 600);
                 }
             } else {
@@ -145,29 +123,31 @@
             }
             poemElement.style.opacity = "1";
         }
-        
+
+        function updateDisplay() {
+            poemElement.textContent = displayText + currentText;
+        }
+
         function resetPoem() {
             poemElement.style.opacity = "0";
             setTimeout(() => {
+                poemElement.textContent = "";
                 currentText = "";
+                displayText = "";
                 currentLine = 0;
                 currentChar = 0;
-                poemElement.innerHTML = "";
-                
-                if (currentPoem === -1) {
-                    currentPoem = 0;
-                } else if (currentPoem >= poems.length - 1) {
-                    currentPoem = -1;
-                } else {
-                    currentPoem++;
-                }
+                currentPoem = (currentPoem === -1) ? 0 : (currentPoem >= poems.length - 1) ? -1 : currentPoem + 1;
                 setTimeout(typeText, 1000);
             }, 500);
         }
-        
-        window.onload = function() {
+
+        window.onload = () => {
             currentPoem = 0;
             setTimeout(typeText, 1000);
+        };
+
+        window.onresize = () => {
+            updateDisplay();
         };
     </script>
 </body>
